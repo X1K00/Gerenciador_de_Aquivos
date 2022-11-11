@@ -88,11 +88,19 @@ caminho = os.path.join(drive,r'Users', usuario,'Documentos',pasta_base) # junta 
 print(caminho)
 
 os.chdir(caminho)
-print(os.getcwd())
+print("voce esta", os.getcwd())
 
 print("fim\n")
 
+#mover arquivos
+#os.rename("t.txt", "t.txt")
 
+#copiar arquivos
+import shutil
+
+shutil.copy2(r"tz", r"c:\Users\franc\Documents\GitHub\t")
+
+#follow_symlinks
 
 # A seguir está a sintaxe para o método open() − os.open(file, flags[, mode]);
 # Parâmetros arquivo − Nome do arquivo a ser aberto.
