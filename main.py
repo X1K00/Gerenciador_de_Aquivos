@@ -1,5 +1,6 @@
-import os
+import os, sys, stat
 import shutil
+import time
 
 class Files:
     def __init__(self,copia) -> None:
@@ -9,25 +10,37 @@ class Files:
         self.area_tranfer = copia
     
     def main(self):
-        print("----------------------------------------------------------------|\n"
-        "->",os.getcwd(),"\n"
-        "n- criar pasta |d- remover |r- renomear |c- copiar |x- cortar |s- SAIR\n" 
-        "v- colar->", self.area_tranfer[1],"_",self.area_tranfer[2],"\n\n"
-        "0 - Voltar")
+        print("----------------------------------------------------------------------|\n"
+        "->",os.getcwd(),"\n\n"
+        "n- criar pasta |d- remover |r- renomear |c- copiar |x- cortar |s- SAIR\n"
+        "i- informações |v- colar->", self.area_tranfer[1],"_",self.area_tranfer[2],"\n")
 
         self.listar_pastas()
         n = input("R: ")
         if n.isnumeric():
-            self.com_numero(int(n))  
+            self.navegacao(int(n))  
         else:
-            self.com_letra(n)
+            self.comandos(n)
 
     def listar_pastas(self): #Cria uma lista com todos os diretorios e arquivos do local, todos enumerados
-        for n, i in enumerate(self.pastas):
-            print(n+1, "-", i)
+        try:
+            m = len(max(self.pastas, key=len))
+            if m <= 35:
+                maior = m
+            else:
+                maior = 35
+        except ValueError:
+            maior = 7
 
-        
-    def com_numero(self, n): #Todos os comandos numericos sõa direcionados para esse metodo
+        print("    {:<{}} | Modificação             | Tamanho\n0 - Voltar".format("Nome", maior))
+        for n, i in enumerate(self.pastas):
+            t_modific = os.path.getmtime(i)
+            tamanho = os.path.getsize(i)
+            modif = time.strftime("%d/%m/%Y ás %H:%M", time.gmtime(t_modific))
+            
+            print("{} - {:<{}} | {}     | {} KB".format(n+1, i[:35], maior, modif, round(tamanho/1000)))
+            #print(n+1, "-", i)  
+    def navegacao(self, n): #Todos os comandos numericos sõa direcionados para esse metodo
         if n == 0:
             os.chdir(self.pasta_anterior) # 0 retona uma pasta no diretorio 
         else: #Qualquer outro numero além de o 0 entra em uma pasta ou abre um arquivo correspondente ao numero digitado
@@ -60,7 +73,7 @@ class Files:
         copia.append(t)
         return copia
 
-    def com_letra(self, l): #Todos os comandos com letras estão nesse metodo
+    def comandos(self, l): #Todos os comandos com letras estão nesse metodo
         copia = self.area_tranfer
 
         if l == "s":
@@ -68,8 +81,8 @@ class Files:
             exit()
 
         elif l == "x":
-            print("----------------------------------------------------------------|\n"
-            "CORTAR ARQUIVO\n")
+            print("----------------------------------------------------------------------|\n"
+            "CORTAR\n")
             self.listar_pastas()
             n = int(input("Cortar: "))
             copia = self.copiar(n, "x")
@@ -79,8 +92,8 @@ class Files:
             print("Pasta criada com sucesso!!")
 
         elif l == "c": # "c" faz a copia do arquivo ou da pasta
-            print("----------------------------------------------------------------|\n"
-            "COPIAR ARQUIVO\n")
+            print("----------------------------------------------------------------------|\n"
+            "COPIAR\n")
             self.listar_pastas()
             n = int(input("Copiar: "))
             copia = self.copiar(n, "c")
@@ -102,23 +115,67 @@ class Files:
                 print("Cortado com sucesso!!")
 
         elif l == "r": # "r" renomeia o arquivo ou a pasta selecionado
-            print("----------------------------------------------------------------|\n"
-            "RENOMEAR ARQUIVO\n")
+            print("----------------------------------------------------------------------|\n"
+            "RENOMEAR\n")
             self.listar_pastas()
             n = int(input("Renomear: "))
             novo_nome = input("Novo nome: ")
             os.rename(self.pastas[n-1], novo_nome)
         
         elif l == "d": # "d" apaga o arquivou ou pasta selecionada 
-            print("----------------------------------------------------------------|\n"
-            "REMOVER ARQUIVO\n")
+            print("----------------------------------------------------------------------|\n"
+            "REMOVER\n")
             self.listar_pastas()
             n = int(input("Remover: "))
             end = self.pasta_atual
-            n1 = self.pastas[n-1]
+            path = self.pastas[n-1]
 
-            self.apagar(end, n1)          
+            self.apagar(end, path)          
             print("Remoção com sucesso!!")
+        
+        elif l == "i":
+            print("----------------------------------------------------------------------|\n"
+            "INFORMAÇÕES\n")
+            self.listar_pastas()
+            n = int(input("Informações: "))
+
+            path = self.pastas[n-1]
+            t_criacao = os.path.getctime(path)
+            t_modific = os.path.getmtime(path)
+            t_acess = os.path.getatime(path)
+            tamanho = os.path.getsize(path)
+            proprie = os.stat(path).st_uid
+            grupo = os.stat(path).st_gid
+            p_ler = os.access(path, os.R_OK)
+            p_gra = os.access(path, os.W_OK)
+            p_exe = os.access(path, os.X_OK)
+
+            while True:
+                print("----------------------------------------------------------------------|\n"
+                "INFORMAÇÕES\n")
+                print("Nome:",path)
+                print("IP Proprietario:", proprie)
+                print("IP Grupo:", grupo)
+                print(time.strftime("Criado em: %d/%m/%Y ás %H:%M", time.gmtime(t_criacao)))
+                print(time.strftime("Modificado em: %d/%m/%Y ás %H:%M", time.gmtime(t_modific)))
+                print(time.strftime("Acessado em: %d/%m/%Y ás %H:%M", time.gmtime(t_acess)))
+                print("Tamanho: {} KB ({} bytes)".format(round(tamanho/1000), tamanho))
+                print("Permições: Ler: {} | Gravar: {} | Executar: {}".format(p_ler, p_gra, p_exe))
+                print()
+                acao = input("0 - Voltar\n1 - Alterar Proprietario\n2 - Alterar Grupo\n3 - Alterar Acessos\nR: ")
+                if acao == "0":
+                    break
+                elif acao == "1":
+                    pro = input("Novo Proprietario: ")
+                    print("Não está disponivel no momento")
+                    #os.fchown(path, pro, -1)
+                elif acao == "2":
+                    gru = input("Novo Grupo: ")
+                    print("Não está disponivel no momento")
+                    #os.fchown(path, -1, gru)
+                elif acao == "3":
+                    print("Não está disponivel no momento")
+    
 
         self.__init__(copia)
         self.main()
