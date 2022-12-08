@@ -13,12 +13,14 @@ class Files:
         print("----------------------------------------------------------------------|\n"
         "->",os.getcwd(),"\n\n"
         "n- criar pasta |d- remover |r- renomear |c- copiar |x- cortar |s- SAIR\n"
-        "i- informações |v- colar->", self.area_tranfer[1],"_",self.area_tranfer[2],"\n")
+        "i- informações |l- criar atalho |v- colar >", self.area_tranfer[1],"_",self.area_tranfer[2],"\n")
 
         self.listar_pastas()
         n = input("R: ")
         if n.isnumeric():
-            self.navegacao(int(n))  
+            self.navegacao(int(n)) 
+            self.__init__(self.area_tranfer) # O self.area_transfer sempre é repassado para que possa ser colado em qualquer lugar
+            self.main() 
         else:
             self.comandos(n)
 
@@ -39,8 +41,22 @@ class Files:
             modif = time.strftime("%d/%m/%Y ás %H:%M", time.gmtime(t_modific))
             
             print("{} - {:<{}} | {}     | {} KB".format(n+1, i[:35], maior, modif, round(tamanho/1000)))
-            #print(n+1, "-", i)  
-    def navegacao(self, n): #Todos os comandos numericos sõa direcionados para esse metodo
+             
+    def listar_pastas_2(self): #Cria uma lista com todos os diretorios e arquivos do local, todos enumerados
+        try:
+            m = len(max(self.pastas, key=len))
+            if m <= 35:
+                maior = m
+            else:
+                maior = 35
+        except ValueError:
+            maior = 7
+
+        print("    {:<{}} \n0 - Voltar".format("Nome", maior))
+        for n, i in enumerate(self.pastas):
+            print(n+1, "-", i)  
+    
+    def navegacao(self, n): #Todos os comandos referentes a navegação estão aqui
         if n == 0:
             os.chdir(self.pasta_anterior) # 0 retona uma pasta no diretorio 
         else: #Qualquer outro numero além de o 0 entra em uma pasta ou abre um arquivo correspondente ao numero digitado
@@ -48,11 +64,8 @@ class Files:
                 os.startfile(self.pastas[n-1]) # Abre arquivo
             else:
                 os.chdir(os.path.join(self.pasta_atual, self.pastas[n-1])) #Entra na pasta
-
-        self.__init__(self.area_tranfer) # O self.area_transfer sempre é repassado para que possa ser colado em qualquer lugar
-        self.main()
-
-    def apagar(self, end, n):
+        
+    def apagar(self, end, n): # Apaga os arquivos ou pastas
         if os.path.isfile(n): #Apaga arquivos
             print("Removendo:", n)
             os.remove(os.path.join(end, n)) 
@@ -65,7 +78,7 @@ class Files:
                     print("Removendo:", root)
                     os.rmdir(root)
 
-    def copiar(self, n, t):
+    def copiar(self, n, t): # Copia os arquivos ou pastas
         copia = []
         print("Copiando:", self.pastas[n-1])
         copia.append(self.pasta_atual)
@@ -73,14 +86,46 @@ class Files:
         copia.append(t)
         return copia
 
-    def comandos(self, l): #Todos os comandos com letras estão nesse metodo
+    def atalho(self, p, a): # Função que cria links simbolicos
+        print("----------------------------------------------------------------------|\n"
+        "CRIAR ATALHO\n"
+        "c- cancelar |v- criar atalho >",p ,"\n")
+        self.listar_pastas_2()
+        n = input("Criar Atalho: ")
+
+        if n.isnumeric():
+            self.navegacao(int(n))
+            self.__init__(self.area_tranfer)
+            self.atalho(p, a)  
+        else:
+            src = os.path.join(p,a)
+            dst = os.path.join(self.pasta_atual,"(atalho)_"+a)
+
+            try:
+                if n == "c":
+                    print("\nCancelado!!\n")
+                    pass
+                elif n == "v":
+                    if os.path.isfile(src):
+                        os.symlink(src, dst)
+                    else:
+                        os.symlink(src, dst, target_is_directory=True)
+                    print("\nAtalho criado com sucesso!!\n")
+                else:
+                    print("\nComando invalido!!\n")
+                    self.atalho(p, a)
+
+            except OSError:
+                print("\nVocê precisa acessar essa função como administrador!!\n")
+
+    def comandos(self, l): # Todos os comandos menos os de navegação estão aqui
         copia = self.area_tranfer
 
-        if l == "s":
+        if l == "s": # "s" para sair do sistema
             print("Saindo do sistema...")
             exit()
 
-        elif l == "x":
+        elif l == "x": # "x" para cortar um arquivo ou pasta
             print("----------------------------------------------------------------------|\n"
             "CORTAR\n")
             self.listar_pastas()
@@ -98,7 +143,17 @@ class Files:
             n = int(input("Copiar: "))
             copia = self.copiar(n, "c")
 
-        elif l == "v": #           
+        elif l == "l": # "l" para criar um link
+            print("----------------------------------------------------------------------|\n"
+            "ATALHO\n")
+            self.listar_pastas()
+            n = int(input("Atalho de: "))
+            path = self.pasta_atual
+            arq = self.pastas[n-1]
+
+            self.atalho(path, arq)
+            
+        elif l == "v": # "v" para colar os arquivos ou pastas cortadas ou copiadas
             orig = os.path.join(self.area_tranfer[0], self.area_tranfer[1])
             dest = os.path.join(self.pasta_atual, self.area_tranfer[1])
             print("Origem", orig)
@@ -133,7 +188,7 @@ class Files:
             self.apagar(end, path)          
             print("Remoção com sucesso!!")
         
-        elif l == "i":
+        elif l == "i": # "i" para saber informações sobre determinada pasta ou arquivo
             print("----------------------------------------------------------------------|\n"
             "INFORMAÇÕES\n")
             self.listar_pastas()
@@ -167,16 +222,15 @@ class Files:
                     break
                 elif acao == "1":
                     pro = input("Novo Proprietario: ")
-                    print("Não está disponivel no momento")
+                    print("Não está disponivel nesse sistema operacional")
                     #os.fchown(path, pro, -1)
                 elif acao == "2":
                     gru = input("Novo Grupo: ")
-                    print("Não está disponivel no momento")
+                    print("Não está disponivel nesse sistema operacional")
                     #os.fchown(path, -1, gru)
                 elif acao == "3":
-                    print("Não está disponivel no momento")
+                    print("Não está disponivel nesse sistema operacional")
     
-
         self.__init__(copia)
         self.main()
        

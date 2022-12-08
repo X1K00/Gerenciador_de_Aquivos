@@ -19,4 +19,4 @@ Atividade do professor Guilherme
 - [x] Remoção;
 - [x] Cópia;
 - [x] Movimento;
-- [] Criação de links simbólicos (ou atalhos).
+- [x] Criação de links simbólicos (ou atalhos).
