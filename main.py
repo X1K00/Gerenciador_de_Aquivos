@@ -17,8 +17,13 @@ class Files:
 
         self.listar_pastas()
         n = input("R: ")
-        if n.isnumeric():
-            self.navegacao(int(n)) 
+
+        if n.isnumeric() or (len(n)>1):
+            try:
+                self.navegacao(n) 
+            except FileNotFoundError:
+                print("\n\nArquivo ou pasta inexistente!!")
+
             self.__init__(self.area_tranfer) # O self.area_transfer sempre é repassado para que possa ser colado em qualquer lugar
             self.main() 
         else:
@@ -57,13 +62,19 @@ class Files:
             print(n+1, "-", i)  
     
     def navegacao(self, n): #Todos os comandos referentes a navegação estão aqui
-        if n == 0:
+        if (n == "0") or (n == "Voltar"):
             os.chdir(self.pasta_anterior) # 0 retona uma pasta no diretorio 
-        else: #Qualquer outro numero além de o 0 entra em uma pasta ou abre um arquivo correspondente ao numero digitado
+        elif n.isnumeric(): #Qualquer outro numero além de o 0 entra em uma pasta ou abre um arquivo correspondente ao numero digitado
+            n = int(n)
             if os.path.isfile(self.pastas[n-1]):  
                 os.startfile(self.pastas[n-1]) # Abre arquivo
             else:
                 os.chdir(os.path.join(self.pasta_atual, self.pastas[n-1])) #Entra na pasta
+        else:
+            if os.path.isfile(n):  
+                os.startfile(n) # Abre arquivo
+            else:
+                os.chdir(os.path.join(self.pasta_atual, n))
         
     def apagar(self, end, n): # Apaga os arquivos ou pastas
         if os.path.isfile(n): #Apaga arquivos
@@ -79,12 +90,22 @@ class Files:
                     os.rmdir(root)
 
     def copiar(self, n, t): # Copia os arquivos ou pastas
-        copia = []
-        print("Copiando:", self.pastas[n-1])
-        copia.append(self.pasta_atual)
-        copia.append(self.pastas[n-1]) # Adiciona o endereço e o nome do objeto escolhido a uma lista que será salva
-        copia.append(t)
-        return copia
+        if n.isnumeric():
+            n = int(n)
+            copia = []
+            print("Copiando:", self.pastas[n-1])
+            copia.append(self.pasta_atual)
+            copia.append(self.pastas[n-1]) # Adiciona o endereço e o nome do objeto escolhido a uma lista que será salva
+            copia.append(t)
+            return copia
+        else:
+            copia = []
+            print("Copiando:", n)
+            copia.append(self.pasta_atual)
+            copia.append(n) # Adiciona o endereço e o nome do objeto escolhido a uma lista que será salva
+            copia.append(t)
+            return copia
+
 
     def atalho(self, p, a): # Função que cria links simbolicos
         print("----------------------------------------------------------------------|\n"
@@ -94,7 +115,7 @@ class Files:
         n = input("Criar Atalho: ")
 
         if n.isnumeric():
-            self.navegacao(int(n))
+            self.navegacao(n)
             self.__init__(self.area_tranfer)
             self.atalho(p, a)  
         else:
@@ -129,8 +150,17 @@ class Files:
             print("----------------------------------------------------------------------|\n"
             "CORTAR\n")
             self.listar_pastas()
-            n = int(input("Cortar: "))
-            copia = self.copiar(n, "x")
+            n = input("Cortar: ")
+
+            if n == "0" or (n == "Voltar"):
+                pass
+            elif n.isnumeric():
+                copia = self.copiar(n, "x")
+            else:
+                if os.path.exists(n):
+                    copia = self.copiar(n, "x")
+                else:
+                    print("\n\nArquivo ou pasta inexistente!!")
 
         elif l == "n": # "n" cria uma nova pasta
             os.mkdir(input("Nome da nova pasta: "))
@@ -140,18 +170,38 @@ class Files:
             print("----------------------------------------------------------------------|\n"
             "COPIAR\n")
             self.listar_pastas()
-            n = int(input("Copiar: "))
-            copia = self.copiar(n, "c")
+            n = input("Copiar: ")
+
+            if n == "0" or (n == "Voltar"):
+                pass
+            elif n.isnumeric():
+                copia = self.copiar(n, "c")
+            else:
+                if os.path.exists(n):
+                    copia = self.copiar(n, "c")
+                else:
+                    print("\n\nArquivo ou pasta inexistente!!")
 
         elif l == "l": # "l" para criar um link
             print("----------------------------------------------------------------------|\n"
             "ATALHO\n")
             self.listar_pastas()
-            n = int(input("Atalho de: "))
-            path = self.pasta_atual
-            arq = self.pastas[n-1]
+            n = input("Atalho de: ")
 
-            self.atalho(path, arq)
+            if n == "0" or (n == "Voltar"):
+                pass
+            elif n.isnumeric():
+                n = int(n)
+                path = self.pasta_atual
+                arq = self.pastas[n-1]
+                self.atalho(path, arq)
+            else:
+                if os.path.exists(n):
+                    path = self.pasta_atual
+                    arq = n
+                    self.atalho(path, arq)
+                else:
+                    print("\n\nArquivo ou pasta inexistente!!")
             
         elif l == "v": # "v" para colar os arquivos ou pastas cortadas ou copiadas
             orig = os.path.join(self.area_tranfer[0], self.area_tranfer[1])
@@ -230,7 +280,10 @@ class Files:
                     #os.fchown(path, -1, gru)
                 elif acao == "3":
                     print("Não está disponivel nesse sistema operacional")
-    
+
+        else:
+            print("\n\nComando inexistente!!")   
+        
         self.__init__(copia)
         self.main()
        
