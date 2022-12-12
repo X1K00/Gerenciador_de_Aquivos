@@ -112,7 +112,8 @@ class Files:
     def atalho(self, p, a): # Função que cria links simbolicos
         print("----------------------------------------------------------------------|\n"
         "CRIAR ATALHO\n"
-        "c- cancelar |v- criar atalho >",p ,"\n")
+        "c- cancelar |v- criar atalho >",a ,"\n"
+        "\nSelecione um diretorio para colar o atalho!\n")
         self.listar_pastas_2()
         n = input("Criar Atalho: ")
 
@@ -139,7 +140,7 @@ class Files:
                     self.atalho(p, a)
 
             except OSError:
-                print("\nVocê precisa acessar essa função como administrador!!\n")
+                print("\n\nVocê precisa acessar essa função como administrador!!")
 
     def comandos(self, n): # Todos os comandos menos os de navegação estão aqui
         copia = self.area_tranfer
@@ -208,18 +209,25 @@ class Files:
                         print("\n\nArquivo ou pasta inexistente!!")
                 
             elif l == "v": # "v" para colar os arquivos ou pastas cortadas ou copiadas
-                orig = os.path.join(self.area_tranfer[0], self.area_tranfer[1])
-                dest = os.path.join(self.pasta_atual, self.area_tranfer[1])
+                try:
+                    orig = os.path.join(self.area_tranfer[0], self.area_tranfer[1])
+                    dest = os.path.join(self.pasta_atual, self.area_tranfer[1])
 
-                if os.path.isfile(orig):
-                    shutil.copy2(orig, dest)
-                else:
-                    shutil.copytree(orig, dest)
-                if self.area_tranfer[2] == "c":
-                    print("Copiado com sucesso!!")
-                else:
-                    self.apagar(self.area_tranfer[0], self.area_tranfer[1])
-                    print("Cortado com sucesso!!")
+                    if os.path.isfile(orig):
+                        shutil.copy2(orig, dest)
+                    else:
+                        shutil.copytree(orig, dest)
+                    if self.area_tranfer[2] == "c":
+                        print("Copiado com sucesso!!")
+                    else:
+                        self.apagar(self.area_tranfer[0], self.area_tranfer[1])
+                        copia = ["","",""]
+                        print("Cortado com sucesso!!")
+
+                except shutil.SameFileError:
+                    print("\n\nJá existe um arquivo ou pasta com esse nome!")
+                except FileNotFoundError:
+                    print("\n\nSelecione uma pasta ou arquivo para ser colado!!")
 
             elif l == "r": # "r" renomeia o arquivo ou a pasta selecionado
                 print("----------------------------------------------------------------------|\n"
@@ -313,19 +321,39 @@ class Files:
                         
                         elif acao == "1":
                             pro = input("Novo Proprietario: ")
-                            print("Não está disponivel nesse sistema operacional")
+                            print("\n\nNão está disponivel nesse sistema operacional")
                             #os.fchown(path, pro, -1)
                         elif acao == "2":
                             gru = input("Novo Grupo: ")
-                            print("Não está disponivel nesse sistema operacional")
+                            print("\n\nNão está disponivel nesse sistema operacional")
                             #os.fchown(path, -1, gru)
                         elif acao == "3":
-                            print("Não está disponivel nesse sistema operacional")
+                            print("\n\nNão está disponivel nesse sistema operacional")
+
+            elif l == "w": # "w" informações sobre o sistema
+                sistema = os.environ
+                
+                while True:
+                    print("----------------------------------------------------------------------|\n"
+                    "INFORMAÇÕES SOBRE O SISTEMA\n")
+                    print("usuario:", sistema['USERNAME'])
+                    print("Sistema Operacional:", sistema['OS'])
+                    print("Linguagem:", sistema['LANG'])
+                    print("Processador:", sistema['PROCESSOR_IDENTIFIER'])
+
+                    acao = input("\n0 - Voltar\nR: ")
+                    if acao == "0" or (acao == "Voltar"):
+                        break
+                    else:
+                        print("\nComando invalido!!")
 
             else:
                 print("\n\nComando inexistente!!")
+        
         except IndexError:
-            print("\n\nPasta ou arquivo não encontrado!!")   
+            print("\n\nPasta ou arquivo não encontrado!!") 
+        except KeyError:
+            print("\n\nOuve um erro!!")  
         
         self.__init__(copia)
         self.main()
