@@ -1,10 +1,10 @@
 # Gerenciador_de_Aquivos
 - Equipe:
   - Francisco da Cunha Júnior
-  - Zennon Sampaio
-  - Joyce Teixeira
-  - Fabiula
-  - Michael
+  - Zennon Sampaio Miranda Lopes
+  - Joyce Teixeira da Silva
+  - Cicera Fabíola Angelo da Silva
+  - Michael Alexandrino Freire
 
 ## Especificações
 - [x] Alterar o diretorio de trabalho;
