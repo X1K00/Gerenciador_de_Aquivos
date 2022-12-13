@@ -1,13 +1,13 @@
-import os, sys, stat
+import os, stat
 import shutil
 import time
 
 class Files:
     def __init__(self,copia) -> None:
-        self.pasta_atual = os.getcwd()
-        self.pastas = os.listdir()
-        self.pasta_anterior = os.path.dirname(os.getcwd())
-        self.area_tranfer = copia
+        self.pasta_atual = os.getcwd() #Sempre vai passar a pasta atual
+        self.pastas = os.listdir() #Passa uma lista com os arquivos e pastas de um diretorio
+        self.pasta_anterior = os.path.dirname(os.getcwd()) #Passa o diretorio anterior
+        self.area_tranfer = copia #Onde o diretorio dos arquivos ou pastas copiados ou recortados, fica guardado
     
     def main(self):
         print("----------------------------------------------------------------------|\n"
@@ -111,19 +111,20 @@ class Files:
 
     def atalho(self, p, a): # Função que cria links simbolicos
         print("----------------------------------------------------------------------|\n"
-        "CRIAR ATALHO\n"
+        "->",os.getcwd(),"\n"
+        "CRIAR ATALHO\n\n"
         "c- cancelar |v- criar atalho >",a ,"\n"
         "\nSelecione um diretorio para colar o atalho!\n")
         self.listar_pastas_2()
         n = input("Criar Atalho: ")
 
-        if n.isnumeric():
+        if n.isnumeric(): # Se digitar numeros o usuari vai navegar pelo sistema
             self.navegacao(n)
             self.__init__(self.area_tranfer)
             self.atalho(p, a)  
         else:
-            src = os.path.join(p,a)
-            dst = os.path.join(self.pasta_atual,"(atalho)_"+a)
+            src = os.path.join(p,a) # Esse vai ser o diretorio de origem
+            dst = os.path.join(self.pasta_atual,"(atalho)_"+a) # Esse é o destino do atalho
 
             try:
                 if n == "c":
@@ -131,20 +132,20 @@ class Files:
                     pass
                 elif n == "v":
                     if os.path.isfile(src):
-                        os.symlink(src, dst)
+                        os.symlink(src, dst) #Para criar o atalho de um arquivo 
                     else:
-                        os.symlink(src, dst, target_is_directory=True)
+                        os.symlink(src, dst, target_is_directory=True) #Para criar o atalho de uma pasta
                     print("\nAtalho criado com sucesso!!\n")
                 else:
                     print("\nComando invalido!!\n")
                     self.atalho(p, a)
 
-            except OSError:
-                print("\n\nVocê precisa acessar essa função como administrador!!")
+            except OSError: # caso o usuario tente acessar a função sem ser administrador
+                print("\n\nVocê precisa acessar essa função como administrador!!") 
 
     def comandos(self, n): # Todos os comandos menos os de navegação estão aqui
         copia = self.area_tranfer
-        l = n.lower()
+        l = n.lower() #converte oq for par minusculo
 
         try:
             if l == "s": # "s" para sair do sistema
@@ -199,12 +200,12 @@ class Files:
                     n = int(n)
                     path = self.pasta_atual
                     arq = self.pastas[n-1]
-                    self.atalho(path, arq)
+                    self.atalho(path, arq) # a função atalho
                 else:
                     if os.path.exists(n):
                         path = self.pasta_atual
                         arq = n
-                        self.atalho(path, arq)
+                        self.atalho(path, arq) # a função atalho
                     else:
                         print("\n\nArquivo ou pasta inexistente!!")
                 
@@ -214,9 +215,9 @@ class Files:
                     dest = os.path.join(self.pasta_atual, self.area_tranfer[1])
 
                     if os.path.isfile(orig):
-                        shutil.copy2(orig, dest)
+                        shutil.copy2(orig, dest) #se for um arquivo
                     else:
-                        shutil.copytree(orig, dest)
+                        shutil.copytree(orig, dest) #se for uma pasta
                     if self.area_tranfer[2] == "c":
                         print("Copiado com sucesso!!")
                     else:
@@ -242,11 +243,11 @@ class Files:
                         n = int(n)
                         print("Renomear:",self.pastas[n-1])
                         novo_nome = input("Novo nome: ")
-                        os.rename(self.pastas[n-1], novo_nome)
+                        os.rename(self.pastas[n-1], novo_nome) #renomeia
                     else:
-                        if os.path.exists(n):
+                        if os.path.exists(n): 
                             novo_nome = input("Novo nome: ")
-                            os.rename(n, novo_nome)
+                            os.rename(n, novo_nome) 
                         else:
                             print("\n\nArquivo ou pasta inexistente!!")
                 except FileExistsError:
@@ -284,7 +285,7 @@ class Files:
                     n = int(n)
                     path = self.pastas[n-1]
                 else:
-                    if os.path.exists(n):
+                    if os.path.exists(n): #se o arquivo ou pasta existe
                         path = n
                     else:
                         print("\n\nArquivo ou pasta inexistente!!")
@@ -292,15 +293,15 @@ class Files:
                 if path == None:
                     pass
                 else:
-                    t_criacao = os.path.getctime(path)
-                    t_modific = os.path.getmtime(path)
-                    t_acess = os.path.getatime(path)
-                    tamanho = os.path.getsize(path)
-                    proprie = os.stat(path).st_uid
-                    grupo = os.stat(path).st_gid
-                    p_ler = os.access(path, os.R_OK)
-                    p_gra = os.access(path, os.W_OK)
-                    p_exe = os.access(path, os.X_OK)
+                    t_criacao = os.path.getctime(path) #data de criação
+                    t_modific = os.path.getmtime(path) #data de modificação 
+                    t_acess = os.path.getatime(path) #data de ultimo acesso
+                    tamanho = os.path.getsize(path) #tamanho do arquivo ou pasta
+                    proprie = os.stat(path).st_uid #id do proprietario
+                    grupo = os.stat(path).st_gid #id do grupo
+                    p_ler = os.access(path, os.R_OK) #permição para ler
+                    p_gra = os.access(path, os.W_OK) #permição para escrever
+                    p_exe = os.access(path, os.X_OK) #permição para executar
 
                     while True:
                         print("----------------------------------------------------------------------|\n"
@@ -314,22 +315,39 @@ class Files:
                         print("Tamanho: {} KB ({} bytes)".format(round(tamanho/1000), tamanho))
                         print("Permições: Ler: {} | Gravar: {} | Executar: {}".format(p_ler, p_gra, p_exe))
                         print()
-                        acao = input("0 - Voltar\n1 - Alterar Proprietario\n2 - Alterar Grupo\n3 - Alterar Acessos\nR: ")
+                        acao = input("0 - Voltar\n1 - Alterar Proprietario\n2 - Alterar Grupo\n3 - Alterar Acesso\nR: ")
                         
                         if acao == "0":
                             break
                         
                         elif acao == "1":
                             pro = input("Novo Proprietario: ")
-                            print("\n\nNão está disponivel nesse sistema operacional")
+                            print("\n\nNão está disponivel nesse sistema operacional") #Disponivel para linux
                             #os.fchown(path, pro, -1)
+
                         elif acao == "2":
                             gru = input("Novo Grupo: ")
-                            print("\n\nNão está disponivel nesse sistema operacional")
+                            print("\n\nNão está disponivel nesse sistema operacional") #Disponivel para linux
                             #os.fchown(path, -1, gru)
-                        elif acao == "3":
-                            print("\n\nNão está disponivel nesse sistema operacional")
 
+                        elif acao == "3":
+                            print("\ny- Desbloquear |n- Bloquear |c- Cancelar")
+                            while True:
+                                r = input("Gravação: ") #Acredito que o objetivo fosse altorizar para alguns usuarios ou grupos, mas como isso não pode ser modificado nesse sistema operacional, foi isso que deu pra fazer
+                                if r == "n":
+                                    os.chmod(path ,stat.S_ENFMT) #altera o acesso a gravação para false
+                                    print("Alterado com sucesso!")
+                                    break
+                                elif r == "y":
+                                    os.chmod(path ,stat.S_IWUSR) #altera todas as permições para true
+                                    print("Alterado com sucesso!")
+                                    break
+                                elif r == "c":
+                                    break
+                                else:
+                                    print("Comando invalido!!")
+                            p_gra = os.access(path, os.W_OK)
+                            
             elif l == "w": # "w" informações sobre o sistema
                 sistema = os.environ
                 
